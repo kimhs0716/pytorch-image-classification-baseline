@@ -36,9 +36,9 @@ def parse_args():
     parser.add_argument("--save-best", action="store_true",
                         help="Save the best model based on validation accuracy")
     parser.add_argument("--patience", type=check_positive, default=5,
-                        help="Early stopping patience based on val acc (default: 5)")
-    parser.add_argument("--min-delta", type=float, default=0.001,
-                        help="Minimum val acc improvement to reset patience (default: 0.001)")
+                        help="Early stopping patience based on val loss (default: 5)")
+    parser.add_argument("--min-delta", type=float, default=0.0005,
+                        help="Minimum val loss improvement to reset patience (default: 0.0005)")
 
     return parser.parse_args()
 
@@ -147,14 +147,14 @@ def main():
             best["val_acc"] = val_acc
             best["path"] = best_path
 
-        if best_val_es is None or val_acc > best_val_es + args.min_delta:
-            best_val_es = val_acc
+        if best_val_es is None or val_loss < best_val_es - args.min_delta:
+            best_val_es = val_loss
             no_improve = 0
         else:
             no_improve += 1
 
         if no_improve >= args.patience:
-            print(f"\nEarly stopping: no val acc improvement for {args.patience} epochs.")
+            print(f"\nEarly stopping: no val loss improvement for {args.patience} epochs.")
             early_stopped = True
             break
 

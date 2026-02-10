@@ -62,7 +62,7 @@ python train.py --model cnn \
 - `--seed`: Random seed [기본값: 42]
 - `--save-best`: Validation accuracy 기준 최고 모델 저장
 - `--patience`: Early stopping patience (개선 없는 에포크 수) [기본값: 5]
-- `--min-delta`: 최소 validation accuracy 개선도 [기본값: 0.001]
+- `--min-delta`: 최소 validation loss 개선도 [기본값: 0.0005]
 
 ## Project Structure
 
@@ -97,7 +97,7 @@ pytorch-image-classification-baseline/
     "device": "cuda",
     "val_rate": 0.1,
     "patience": 5,
-    "min_delta": 0.001,
+    "min_delta": 0.0005,
     "early_stopped": true,
     "start_time": "2026-02-10T13:33:13",
     "end_time": "2026-02-10T13:35:20",
@@ -142,23 +142,23 @@ MNIST 데이터셋에서의 예상 성능:
 
 ## Early Stopping
 
-Early stopping은 validation accuracy가 개선되지 않을 때 학습을 조기 종료하는 기법입니다.
+Early stopping은 validation loss가 개선되지 않을 때 학습을 조기 종료하는 기법입니다.
 
 **사용 방법:**
 
 ```bash
-# 기본 설정 (5 에포크 개선 없으면 종료, min_delta=0.001)
+# 기본 설정 (5 에포크 개선 없으면 종료, min_delta=0.0005)
 python train.py --patience 5 --save-best
 
 # 보수적 설정 (더 높은 개선 필요)
-python train.py --patience 10 --min-delta 0.01
+python train.py --patience 10 --min-delta 0.001
 
 # 공격적 설정 (3 에포크만 기다림)
-python train.py --patience 3 --min-delta 0.001
+python train.py --patience 3 --min-delta 0.0005
 ```
 
 **동작 원리:**
-- `--patience` (기본값: 5): Validation accuracy가 개선되지 않은 연속 에포크 수
-- `--min-delta` (기본값: 0.001): 개선으로 간주되는 최소 정확도 증가량 (예: 0.001 = 0.1%)
+- `--patience` (기본값: 5): Validation loss가 개선되지 않은 연속 에포크 수
+- `--min-delta` (기본값: 0.0005): 개선으로 간주되는 최소 loss 감소량
 - 조기 종료 발동 시 `metrics.json`에 `early_stopped: true`, `epochs_ran` 기록
 
