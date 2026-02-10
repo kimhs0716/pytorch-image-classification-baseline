@@ -25,8 +25,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train image classification model on MNIST")
     parser.add_argument("--model", type=str, default="cnn", choices=["cnn", "mlp"],
                         help="Model type (default: cnn)")
-    parser.add_argument("--epochs", type=check_positive, default=5,
-                        help="Number of training epochs (default: 5)")
+    parser.add_argument("--epochs", type=check_positive, default=10,
+                        help="Number of training epochs (default: 10)")
     parser.add_argument("--batch-size", type=check_positive, default=128,
                         help="Batch size (default: 128)")
     parser.add_argument("--lr", type=float, default=1e-3,
@@ -37,8 +37,8 @@ def parse_args():
                         help="Save the best model based on validation accuracy")
     parser.add_argument("--patience", type=check_positive, default=5,
                         help="Early stopping patience based on val acc (default: 5)")
-    parser.add_argument("--min-delta", type=float, default=0.0,
-                        help="Minimum val acc improvement to reset patience (default: 0.0)")
+    parser.add_argument("--min-delta", type=float, default=0.001,
+                        help="Minimum val acc improvement to reset patience (default: 0.001)")
 
     return parser.parse_args()
 

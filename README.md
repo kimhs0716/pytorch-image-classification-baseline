@@ -9,6 +9,7 @@ MNIST 데이터셋을 사용한 이미지 분류 베이스라인 프로젝트입
 - **로깅**: Training history 및 metrics 자동 저장
 - **시각화**: Loss/Accuracy 그래프 자동 생성
 - **Best Model**: Validation accuracy 기준 최고 모델 저장 옵션
+- **Early Stopping**: Validation accuracy 개선 없을 시 조기 종료
 
 ## Requirements
 
@@ -47,17 +48,21 @@ python train.py --model cnn \
                 --batch-size 256 \
                 --lr 0.001 \
                 --seed 42 \
-                --save-best
+                --save-best \
+                --patience 5 \
+                --min-delta 0.001
 ```
 
 ### 인자 설명
 
 - `--model`: 모델 타입 (cnn, mlp) [기본값: cnn]
-- `--epochs`: 학습 에포크 수 [기본값: 5]
+- `--epochs`: 학습 에포크 수 [기본값: 10]
 - `--batch-size`: 배치 크기 [기본값: 128]
 - `--lr`: Learning rate [기본값: 0.001]
 - `--seed`: Random seed [기본값: 42]
 - `--save-best`: Validation accuracy 기준 최고 모델 저장
+- `--patience`: Early stopping patience (개선 없는 에포크 수) [기본값: 5]
+- `--min-delta`: 최소 validation accuracy 개선도 [기본값: 0.001]
 
 ## Project Structure
 
@@ -84,12 +89,16 @@ pytorch-image-classification-baseline/
 {
   "meta": {
     "model": "cnn",
-    "epochs": 5,
+    "epochs": 10,
+    "epochs_ran": 8,
     "batch_size": 128,
     "lr": 0.001,
     "seed": 42,
     "device": "cuda",
     "val_rate": 0.1,
+    "patience": 5,
+    "min_delta": 0.001,
+    "early_stopped": true,
     "start_time": "2026-02-10T13:33:13",
     "end_time": "2026-02-10T13:35:20",
     "duration_sec": 127.456
@@ -130,4 +139,26 @@ pytorch-image-classification-baseline/
 MNIST 데이터셋에서의 예상 성능:
 - **CNN**: ~99% test accuracy (5 epochs)
 - **MLP**: ~97% test accuracy (5 epochs)
+
+## Early Stopping
+
+Early stopping은 validation accuracy가 개선되지 않을 때 학습을 조기 종료하는 기법입니다.
+
+**사용 방법:**
+
+```bash
+# 기본 설정 (5 에포크 개선 없으면 종료, min_delta=0.001)
+python train.py --patience 5 --save-best
+
+# 보수적 설정 (더 높은 개선 필요)
+python train.py --patience 10 --min-delta 0.01
+
+# 공격적 설정 (3 에포크만 기다림)
+python train.py --patience 3 --min-delta 0.001
+```
+
+**동작 원리:**
+- `--patience` (기본값: 5): Validation accuracy가 개선되지 않은 연속 에포크 수
+- `--min-delta` (기본값: 0.001): 개선으로 간주되는 최소 정확도 증가량 (예: 0.001 = 0.1%)
+- 조기 종료 발동 시 `metrics.json`에 `early_stopped: true`, `epochs_ran` 기록
 
