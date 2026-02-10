@@ -1,10 +1,17 @@
 # Python Virtual Environment
 .venv/
 
+# Data files
+data/
+
 # Results
 outputs/
 
 # Python cache files
 __pycache__/
 
-# 
+# IDE files
+.vscode/
+
+# Local files
+*.ipynb
