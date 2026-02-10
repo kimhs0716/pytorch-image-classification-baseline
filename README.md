@@ -9,7 +9,7 @@ MNIST 데이터셋을 사용한 이미지 분류 베이스라인 프로젝트입
 - **로깅**: Training history 및 metrics 자동 저장
 - **시각화**: Loss/Accuracy 그래프 자동 생성
 - **Best Model**: Validation accuracy 기준 최고 모델 저장 옵션
-- **Early Stopping**: Validation accuracy 개선 없을 시 조기 종료
+- **Early Stopping**: Validation loss 개선 없을 시 조기 종료
 
 ## Requirements
 
@@ -44,13 +44,13 @@ python train.py --model mlp
 
 ```bash
 python train.py --model cnn \
-                --epochs 10 \
+                --epochs 20 \
                 --batch-size 256 \
                 --lr 0.001 \
                 --seed 42 \
                 --save-best \
                 --patience 5 \
-                --min-delta 0.001
+                --min-delta 0.0005
 ```
 
 ### 인자 설명
@@ -137,8 +137,8 @@ pytorch-image-classification-baseline/
 ## Results
 
 MNIST 데이터셋에서의 예상 성능:
-- **CNN**: ~99% test accuracy (5 epochs)
-- **MLP**: ~97% test accuracy (5 epochs)
+- **CNN**: ~99% test accuracy (10 epochs)
+- **MLP**: ~97% test accuracy (10 epochs)
 
 ## Early Stopping
 
