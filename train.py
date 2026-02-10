@@ -35,6 +35,11 @@ def parse_args():
                         help="Random seed for reproducibility (default: 42)")
     parser.add_argument("--save-best", action="store_true",
                         help="Save the best model based on validation accuracy")
+    parser.add_argument("--patience", type=check_positive, default=5,
+                        help="Early stopping patience based on val acc (default: 5)")
+    parser.add_argument("--min-delta", type=float, default=0.0,
+                        help="Minimum val acc improvement to reset patience (default: 0.0)")
+
     return parser.parse_args()
 
 
@@ -116,6 +121,11 @@ def main():
     best_path = os.path.join(run_dir, "best_model.pt")
     best_state = None
 
+    # early stopping state
+    best_val_es = None
+    no_improve = 0
+    early_stopped = False
+
     for epoch in range(1, args.epochs + 1):
         train_loss, train_acc = train_one_epoch(model, train_loader, optimizer, criterion, device)
         val_loss, val_acc = evaluate(model, val_loader, criterion, device)
@@ -137,6 +147,17 @@ def main():
             best["val_acc"] = val_acc
             best["path"] = best_path
 
+        if best_val_es is None or val_acc > best_val_es + args.min_delta:
+            best_val_es = val_acc
+            no_improve = 0
+        else:
+            no_improve += 1
+
+        if no_improve >= args.patience:
+            print(f"\nEarly stopping: no val acc improvement for {args.patience} epochs.")
+            early_stopped = True
+            break
+
     if best["enabled"] and best_state is not None:
         print(f"\nLoading best model from epoch {best['epoch']} with val acc {best['val_acc']:.4f}")
         torch.save(best_state, best_path)
@@ -149,11 +170,15 @@ def main():
         "meta": {
             "model": args.model,
             "epochs": args.epochs,
+            "epochs_ran": len(history["train_loss"]),
             "batch_size": args.batch_size,
             "lr": args.lr,
             "seed": args.seed,
             "device": device,
             "val_rate": VAL_RATE,
+            "patience": args.patience,
+            "min_delta": args.min_delta,
+            "early_stopped": early_stopped,
             "start_time": start_time,
             "end_time": datetime.now().isoformat(timespec="seconds"),
             "duration_sec": round(time.perf_counter() - start_perf, 3),
@@ -165,7 +190,7 @@ def main():
             "best": best,
         },
     }
-    
+
     save_json(os.path.join(run_dir, "metrics.json"), metrics)
 
     plot_history(run_dir)
